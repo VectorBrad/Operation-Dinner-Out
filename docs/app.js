@@ -464,7 +464,7 @@
         document.getElementById("stat-cuisines").textContent = Object.keys(cuisines).length;
     }
 
-    // ── Nav scroll effect ──
+    // ── Nav scroll effect + hamburger toggle ──
     function initNav() {
         var nav = document.getElementById("nav");
         window.addEventListener("scroll", function () {
@@ -473,6 +473,21 @@
             } else {
                 nav.classList.remove("scrolled");
             }
+        });
+
+        var hamburger = document.getElementById("nav-hamburger");
+        var navLinks = document.getElementById("nav-links");
+        hamburger.addEventListener("click", function () {
+            hamburger.classList.toggle("active");
+            navLinks.classList.toggle("open");
+        });
+
+        // Close menu when a link is clicked
+        navLinks.querySelectorAll("a").forEach(function (link) {
+            link.addEventListener("click", function () {
+                hamburger.classList.remove("active");
+                navLinks.classList.remove("open");
+            });
         });
     }
 
