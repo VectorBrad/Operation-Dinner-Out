@@ -540,11 +540,8 @@
     // ── Load data from Firestore, fall back to static JSON ──
     async function loadData() {
         // Try Firestore first
-        if (typeof firebase !== "undefined") {
+        if (typeof firebase !== "undefined" && firebase.apps.length) {
             try {
-                if (!firebase.apps.length) {
-                    firebase.initializeApp(firebaseConfig);
-                }
                 db = firebase.firestore();
                 const snapshot = await db.collection("restaurants").get();
                 if (!snapshot.empty) {
@@ -572,6 +569,11 @@
 
     // ── Init ──
     async function init() {
+        // Initialize Firebase first — auth and data both depend on it
+        if (typeof firebase !== "undefined" && !firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+
         initMap();
         initNav();
         initModal();
