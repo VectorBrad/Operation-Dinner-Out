@@ -48,6 +48,14 @@ nav.scrolled { box-shadow: 0 2px 20px rgba(0,0,0,0.3); }
     transition: color 0.2s;
 }
 .nav-links a:hover { color: #d4a96a; text-decoration: none; }
+.nav-links a.nav-add {
+    color: #071E3D;
+    background: #d4a96a;
+    padding: 6px 14px;
+    border-radius: 2px;
+    transition: opacity 0.2s;
+}
+.nav-links a.nav-add:hover { opacity: 0.85; color: #071E3D; }
 
 /* ── Hero ── */
 .hero {

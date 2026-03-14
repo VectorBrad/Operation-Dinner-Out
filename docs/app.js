@@ -236,6 +236,8 @@
 
         // Store reference to the restaurant object and card element for post-save update
         document.getElementById("edit-modal").dataset.restaurantIndex = allRestaurants.indexOf(r);
+        document.querySelector(".modal-title").textContent = "Edit Restaurant";
+        document.querySelector(".modal-btn-save").textContent = "Save Changes";
 
         showModal();
     }
@@ -254,11 +256,38 @@
         document.body.style.overflow = "";
     }
 
+    // ── Open modal in "Add New" mode ──
+    function openAddModal() {
+        document.getElementById("edit-doc-id").value = "";
+        document.getElementById("edit-name").value = "";
+        document.getElementById("edit-cuisine").value = "";
+        document.getElementById("edit-type").value = "";
+        document.getElementById("edit-price").value = "";
+        document.getElementById("edit-vibe").value = "";
+        document.getElementById("edit-location").value = "";
+        document.getElementById("edit-url").value = "";
+        document.getElementById("edit-her-rating").value = "";
+        document.getElementById("edit-his-rating").value = "";
+        document.getElementById("edit-status").value = "Want to try";
+        document.getElementById("edit-notes").value = "";
+
+        document.getElementById("edit-modal").dataset.restaurantIndex = "-1";
+        document.querySelector(".modal-title").textContent = "Add Restaurant";
+        document.querySelector(".modal-btn-save").textContent = "Add Restaurant";
+        showModal();
+    }
+
     function initModal() {
         document.getElementById("modal-close").addEventListener("click", hideModal);
         document.getElementById("modal-cancel").addEventListener("click", hideModal);
         document.getElementById("edit-modal").addEventListener("click", function (e) {
             if (e.target === this) hideModal();
+        });
+
+        // Nav "New" button
+        document.getElementById("nav-add-btn").addEventListener("click", function (e) {
+            e.preventDefault();
+            openAddModal();
         });
 
         document.getElementById("edit-form").addEventListener("submit", async function (e) {
@@ -293,29 +322,42 @@
                 changes.average_rating = changes.her_rating ?? changes.his_rating ?? null;
             }
 
+            const isNew = !docId;
+            const finalDocId = isNew ? makeDocId(changes.name) : docId;
+
             try {
                 if (db) {
-                    await db.collection("restaurants").doc(docId).update(changes);
+                    if (isNew) {
+                        await db.collection("restaurants").doc(finalDocId).set(changes);
+                    } else {
+                        await db.collection("restaurants").doc(finalDocId).update(changes);
+                    }
                 }
 
-                // Update in-memory record
-                const idx = parseInt(document.getElementById("edit-modal").dataset.restaurantIndex, 10);
-                if (!isNaN(idx) && allRestaurants[idx]) {
-                    Object.assign(allRestaurants[idx], changes);
-
-                    // Re-render cards and markers in place
-                    const filtered = applyFilters();
-                    renderCards(filtered);
-                    renderMarkers(filtered);
-                    updateStats(allRestaurants);
+                if (isNew) {
+                    // Add to in-memory array and re-render
+                    changes._docId = finalDocId;
+                    allRestaurants.push(changes);
+                    populateFilterOptions(allRestaurants);
+                } else {
+                    // Update in-memory record
+                    const idx = parseInt(document.getElementById("edit-modal").dataset.restaurantIndex, 10);
+                    if (!isNaN(idx) && allRestaurants[idx]) {
+                        Object.assign(allRestaurants[idx], changes);
+                    }
                 }
+
+                const filtered = applyFilters();
+                renderCards(filtered);
+                renderMarkers(filtered);
+                updateStats(allRestaurants);
 
                 hideModal();
             } catch (err) {
                 console.error("Failed to save:", err);
                 alert("Save failed — check the console for details.");
             } finally {
-                saveBtn.textContent = "Save Changes";
+                saveBtn.textContent = isNew ? "Add Restaurant" : "Save Changes";
                 saveBtn.disabled = false;
             }
         });
@@ -345,13 +387,11 @@
 
     // ── Filters ──
     function applyFilters() {
-        const status = document.getElementById("filter-status").value;
         const cuisine = document.getElementById("filter-cuisine").value;
         const vibe = document.getElementById("filter-vibe").value;
         const price = document.getElementById("filter-price").value;
 
         return allRestaurants.filter(function (r) {
-            if (status !== "all" && r.status !== status) return false;
             if (cuisine !== "all" && r.cuisine.toLowerCase() !== cuisine.toLowerCase())
                 return false;
             if (vibe !== "all" && r.vibe.toLowerCase() !== vibe.toLowerCase()) return false;
@@ -481,7 +521,7 @@
         populateFilterOptions(allRestaurants);
 
         // Filter listeners
-        ["filter-status", "filter-cuisine", "filter-vibe", "filter-price"].forEach(function (id) {
+        ["filter-cuisine", "filter-vibe", "filter-price"].forEach(function (id) {
             document.getElementById(id).addEventListener("change", onFilterChange);
         });
 
