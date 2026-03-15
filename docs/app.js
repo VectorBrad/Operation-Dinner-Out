@@ -13,6 +13,7 @@
     let currentUser = null;
     let pendingImageFile = null;
     let hasImageInCropper = false;
+    let imageRemoved = false;
 
     // Allowed users enforced by Firestore security rules — no email list in client code
 
@@ -243,11 +244,13 @@
 
         // Show existing image or clear cropper
         pendingImageFile = null;
+        imageRemoved = false;
         if (r.image) {
             var isCroppable = r.image_type === "upload" || r.image.includes("firebasestorage");
             showCropper(r.image, isCroppable);
         } else {
             clearCropper();
+            imageRemoved = false;
         }
 
         // Store reference to the restaurant object and card element for post-save update
@@ -291,6 +294,7 @@
         // Clear image cropper
         pendingImageFile = null;
         clearCropper();
+        imageRemoved = false;
 
         document.getElementById("edit-modal").dataset.restaurantIndex = "-1";
         document.querySelector(".modal-title").textContent = "Add Restaurant";
@@ -352,6 +356,7 @@
         input.value = "";
         pendingImageFile = null;
         hasImageInCropper = false;
+        imageRemoved = true;
     }
 
     function getCroppedBlob() {
@@ -477,8 +482,11 @@
             const finalDocId = isNew ? makeDocId(changes.name) : docId;
 
             try {
-                // Upload cropped image if new file or re-cropped existing
-                if (cropper && hasImageInCropper) {
+                // Handle image changes
+                if (imageRemoved) {
+                    changes.image = null;
+                    changes.image_type = null;
+                } else if (cropper && hasImageInCropper) {
                     saveBtn.textContent = "Uploading image…";
                     var croppedBlob = await getCroppedBlob();
                     if (croppedBlob) {

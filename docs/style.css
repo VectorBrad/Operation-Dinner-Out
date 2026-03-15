@@ -753,9 +753,11 @@ section { padding: 100px 0; }
     background: rgba(255,255,255,0.1);
     color: rgba(255,255,255,0.6);
 }
-.modal-btn-save {
+.modal-btn-save,
+.image-replace-btn {
     background: #d4a96a;
     color: #071E3D;
+    cursor: pointer;
 }
 
 /* ── Footer ── */
