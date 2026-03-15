@@ -326,6 +326,12 @@
             }
 
             const isNew = !docId;
+            if (isNew && !changes.name) {
+                alert("Name is required.");
+                saveBtn.textContent = "Add Restaurant";
+                saveBtn.disabled = false;
+                return;
+            }
             const finalDocId = isNew ? makeDocId(changes.name) : docId;
 
             try {
