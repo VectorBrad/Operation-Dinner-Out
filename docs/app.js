@@ -328,7 +328,8 @@
             });
         } else {
             // Preview-only mode for existing remote images
-            cropImg.crossOrigin = "anonymous";
+            // Don't set crossOrigin — many servers don't send CORS headers
+            cropImg.removeAttribute("crossOrigin");
             cropImg.src = src;
             hasImageInCropper = false;
         }
