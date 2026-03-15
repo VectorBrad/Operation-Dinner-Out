@@ -174,7 +174,8 @@
             <div class="card-image">
                 <img src="${imageUrl}" alt="${r.name}" loading="lazy">
                 <span class="card-image-badge ${statusClass}">${statusLabel}</span>
-            </div>` : ""}
+            </div>` : `
+            <div class="card-status-banner ${statusClass}">${statusLabel}</div>`}
             <div class="card-body">
                 <div class="card-header">
                     <span class="card-name">${nameHtml}</span>

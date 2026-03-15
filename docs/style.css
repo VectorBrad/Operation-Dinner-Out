@@ -383,6 +383,24 @@ section { padding: 100px 0; }
     color: #fff;
 }
 
+/* Status banner for cards without images */
+.card-status-banner {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    text-align: center;
+}
+.card-status-banner.tried {
+    background: rgba(46, 125, 50, 0.85);
+    color: #fff;
+}
+.card-status-banner.want {
+    background: rgba(139, 111, 71, 0.85);
+    color: #fff;
+}
+
 /* Instagram small-thumbnail treatment */
 .card-image.card-image-ig {
     display: flex;
