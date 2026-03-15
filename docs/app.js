@@ -12,6 +12,7 @@
     let storage;
     let currentUser = null;
     let pendingImageFile = null;
+    let hasImageInCropper = false;
 
     // Allowed users enforced by Firestore security rules — no email list in client code
 
@@ -308,6 +309,7 @@
         cropContainer.style.display = "";
         cropImg.src = src;
 
+        hasImageInCropper = true;
         if (cropper) cropper.destroy();
         cropper = new Cropper(cropImg, {
             aspectRatio: 16 / 10,
@@ -331,6 +333,7 @@
         uploadArea.style.display = "flex";
         input.value = "";
         pendingImageFile = null;
+        hasImageInCropper = false;
     }
 
     function getCroppedBlob() {
@@ -450,8 +453,8 @@
             const finalDocId = isNew ? makeDocId(changes.name) : docId;
 
             try {
-                // Upload cropped image if one was selected
-                if (pendingImageFile && cropper) {
+                // Upload cropped image if new file or re-cropped existing
+                if (cropper && hasImageInCropper) {
                     saveBtn.textContent = "Uploading image…";
                     var croppedBlob = await getCroppedBlob();
                     if (croppedBlob) {
