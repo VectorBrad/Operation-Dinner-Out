@@ -300,27 +300,38 @@
     // ── Image upload + crop helpers ──
     let cropper = null;
 
-    function showCropper(src) {
+    function showCropper(src, isLocalFile) {
         var uploadArea = document.getElementById("image-upload-area");
         var cropContainer = document.getElementById("image-crop-container");
         var cropImg = document.getElementById("image-crop-source");
 
         uploadArea.style.display = "none";
         cropContainer.style.display = "";
-        cropImg.src = src;
 
-        hasImageInCropper = true;
-        if (cropper) cropper.destroy();
-        cropper = new Cropper(cropImg, {
-            aspectRatio: 16 / 10,
-            viewMode: 1,
-            dragMode: "move",
-            autoCropArea: 1,
-            cropBoxResizable: true,
-            cropBoxMovable: true,
-            background: false,
-            responsive: true,
-        });
+        if (cropper) { cropper.destroy(); cropper = null; }
+
+        // For local files (data URLs), show full cropper
+        // For remote URLs, show preview only (CORS blocks canvas export)
+        if (isLocalFile) {
+            cropImg.crossOrigin = null;
+            cropImg.src = src;
+            hasImageInCropper = true;
+            cropper = new Cropper(cropImg, {
+                aspectRatio: 16 / 10,
+                viewMode: 1,
+                dragMode: "move",
+                autoCropArea: 1,
+                cropBoxResizable: true,
+                cropBoxMovable: true,
+                background: false,
+                responsive: true,
+            });
+        } else {
+            // Preview-only mode for existing remote images
+            cropImg.crossOrigin = "anonymous";
+            cropImg.src = src;
+            hasImageInCropper = false;
+        }
     }
 
     function clearCropper() {
@@ -354,7 +365,7 @@
         pendingImageFile = file;
         var reader = new FileReader();
         reader.onload = function (e) {
-            showCropper(e.target.result);
+            showCropper(e.target.result, true);
         };
         reader.readAsDataURL(file);
     }
@@ -370,9 +381,15 @@
         var area = document.getElementById("image-upload-area");
         var input = document.getElementById("edit-image-upload");
         var removeBtn = document.getElementById("image-crop-remove");
+        var replaceInput = document.getElementById("image-replace-input");
 
         input.addEventListener("change", function () {
             if (this.files && this.files[0]) handleImageFile(this.files[0]);
+        });
+
+        replaceInput.addEventListener("change", function () {
+            if (this.files && this.files[0]) handleImageFile(this.files[0]);
+            this.value = "";
         });
 
         area.addEventListener("dragover", function (e) {
