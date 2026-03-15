@@ -328,14 +328,15 @@
             hasImageInCropper = true;
             cropper = new Cropper(cropImg, {
                 aspectRatio: 16 / 10,
-                viewMode: 1,
+                viewMode: 2,
                 dragMode: "move",
-                autoCropArea: 1,
+                autoCropArea: 0.9,
                 cropBoxResizable: true,
                 cropBoxMovable: true,
                 background: false,
                 responsive: true,
                 checkCrossOrigin: !isDataUrl,
+                minContainerHeight: 200,
             });
         } else {
             // Preview-only mode for existing remote images
@@ -393,15 +394,9 @@
         var area = document.getElementById("image-upload-area");
         var input = document.getElementById("edit-image-upload");
         var removeBtn = document.getElementById("image-crop-remove");
-        var replaceInput = document.getElementById("image-replace-input");
 
         input.addEventListener("change", function () {
             if (this.files && this.files[0]) handleImageFile(this.files[0]);
-        });
-
-        replaceInput.addEventListener("change", function () {
-            if (this.files && this.files[0]) handleImageFile(this.files[0]);
-            this.value = "";
         });
 
         area.addEventListener("dragover", function (e) {
