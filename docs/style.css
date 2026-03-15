@@ -662,6 +662,61 @@ section { padding: 100px 0; }
     border-color: #d4a96a;
 }
 .modal-field textarea { resize: vertical; }
+
+/* Image upload area */
+.image-upload-area {
+    position: relative;
+    border: 2px dashed rgba(212,169,106,0.3);
+    border-radius: 4px;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    min-height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.image-upload-area:hover,
+.image-upload-area.dragover {
+    border-color: #d4a96a;
+}
+.image-upload-input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+.image-upload-text {
+    color: rgba(255,255,255,0.4);
+    font-size: 0.85rem;
+}
+.image-upload-preview {
+    max-width: 100%;
+    max-height: 160px;
+    border-radius: 4px;
+    object-fit: cover;
+}
+.image-upload-remove {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    background: rgba(0,0,0,0.6);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.image-upload-remove:hover {
+    background: rgba(200,50,50,0.8);
+}
+
 .modal-actions {
     display: flex;
     justify-content: flex-end;

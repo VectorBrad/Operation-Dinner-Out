@@ -9,7 +9,9 @@
     let markerLayer;
     let allRestaurants = [];
     let db;
+    let storage;
     let currentUser = null;
+    let pendingImageFile = null;
 
     // Allowed users enforced by Firestore security rules — no email list in client code
 
@@ -237,6 +239,14 @@
         document.getElementById("edit-status").value = r.status || "Want to try";
         document.getElementById("edit-notes").value = r.notes || "";
 
+        // Show existing image if any
+        pendingImageFile = null;
+        if (r.image) {
+            showImagePreview(r.image);
+        } else {
+            clearImagePreview();
+        }
+
         // Store reference to the restaurant object and card element for post-save update
         document.getElementById("edit-modal").dataset.restaurantIndex = allRestaurants.indexOf(r);
         document.querySelector(".modal-title").textContent = "Edit Restaurant";
@@ -274,10 +284,87 @@
         document.getElementById("edit-status").value = "Want to try";
         document.getElementById("edit-notes").value = "";
 
+        // Clear image upload
+        pendingImageFile = null;
+        clearImagePreview();
+
         document.getElementById("edit-modal").dataset.restaurantIndex = "-1";
         document.querySelector(".modal-title").textContent = "Add Restaurant";
         document.querySelector(".modal-btn-save").textContent = "Add Restaurant";
         showModal();
+    }
+
+    // ── Image upload helpers ──
+    function showImagePreview(src) {
+        var preview = document.getElementById("image-upload-preview");
+        var text = document.getElementById("image-upload-text");
+        var removeBtn = document.getElementById("image-upload-remove");
+        preview.src = src;
+        preview.style.display = "";
+        text.style.display = "none";
+        removeBtn.style.display = "";
+    }
+
+    function clearImagePreview() {
+        var preview = document.getElementById("image-upload-preview");
+        var text = document.getElementById("image-upload-text");
+        var removeBtn = document.getElementById("image-upload-remove");
+        var input = document.getElementById("edit-image-upload");
+        preview.src = "";
+        preview.style.display = "none";
+        text.style.display = "";
+        removeBtn.style.display = "none";
+        input.value = "";
+        pendingImageFile = null;
+    }
+
+    function handleImageFile(file) {
+        if (!file || !file.type.startsWith("image/")) return;
+        pendingImageFile = file;
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            showImagePreview(e.target.result);
+        };
+        reader.readAsDataURL(file);
+    }
+
+    async function uploadImage(file, docId) {
+        if (!storage) return null;
+        var ext = file.name.split(".").pop() || "jpg";
+        var ref = storage.ref("restaurant-images/" + docId + "." + ext);
+        var snapshot = await ref.put(file);
+        return snapshot.ref.getDownloadURL();
+    }
+
+    function initImageUpload() {
+        var area = document.getElementById("image-upload-area");
+        var input = document.getElementById("edit-image-upload");
+        var removeBtn = document.getElementById("image-upload-remove");
+
+        input.addEventListener("change", function () {
+            if (this.files && this.files[0]) handleImageFile(this.files[0]);
+        });
+
+        area.addEventListener("dragover", function (e) {
+            e.preventDefault();
+            area.classList.add("dragover");
+        });
+        area.addEventListener("dragleave", function () {
+            area.classList.remove("dragover");
+        });
+        area.addEventListener("drop", function (e) {
+            e.preventDefault();
+            area.classList.remove("dragover");
+            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                handleImageFile(e.dataTransfer.files[0]);
+            }
+        });
+
+        removeBtn.addEventListener("click", function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            clearImagePreview();
+        });
     }
 
     function initModal() {
@@ -286,6 +373,8 @@
         document.getElementById("edit-modal").addEventListener("click", function (e) {
             if (e.target === this) hideModal();
         });
+
+        initImageUpload();
 
         // Nav "New" button
         document.getElementById("nav-add-btn").addEventListener("click", function (e) {
@@ -335,6 +424,17 @@
             const finalDocId = isNew ? makeDocId(changes.name) : docId;
 
             try {
+                // Upload image if one was selected
+                if (pendingImageFile) {
+                    saveBtn.textContent = "Uploading image…";
+                    var imageUrl = await uploadImage(pendingImageFile, finalDocId);
+                    if (imageUrl) {
+                        changes.image = imageUrl;
+                        changes.image_type = "upload";
+                    }
+                    pendingImageFile = null;
+                }
+
                 if (db) {
                     if (isNew) {
                         await db.collection("restaurants").doc(finalDocId).set(changes);
@@ -570,9 +670,12 @@
 
     // ── Init ──
     async function init() {
-        // Initialize Firebase first — auth and data both depend on it
+        // Initialize Firebase first — auth, data, and storage all depend on it
         if (typeof firebase !== "undefined" && !firebase.apps.length) {
             firebase.initializeApp(firebaseConfig);
+        }
+        if (typeof firebase !== "undefined" && firebase.storage) {
+            storage = firebase.storage();
         }
 
         initMap();
