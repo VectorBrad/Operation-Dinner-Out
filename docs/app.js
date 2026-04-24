@@ -2,6 +2,18 @@
    Dinner Out — App Logic (Portugal-inspired)
    ============================================ */
 
+function handleImgError(img) {
+    var cardImage = img.closest('.card-image');
+    if (!cardImage) return;
+    var badge = cardImage.querySelector('.card-image-badge');
+    var statusClass = badge ? badge.className.replace('card-image-badge', '').trim() : '';
+    var statusLabel = badge ? badge.textContent : '';
+    var banner = document.createElement('div');
+    banner.className = 'card-status-banner ' + statusClass;
+    banner.textContent = statusLabel;
+    cardImage.replaceWith(banner);
+}
+
 (function () {
     "use strict";
 
@@ -170,11 +182,11 @@
             ${imageUrl && imageType === "instagram" ? `
             <div class="card-image card-image-ig">
                 <div class="ig-backdrop" style="background-image:url('${imageUrl}')"></div>
-                <img src="${imageUrl}" alt="${r.name}" loading="lazy">
+                <img src="${imageUrl}" alt="${r.name}" loading="lazy" onerror="handleImgError(this)">
                 <span class="card-image-badge ${statusClass}">${statusLabel}</span>
             </div>` : imageUrl ? `
             <div class="card-image">
-                <img src="${imageUrl}" alt="${r.name}" loading="lazy">
+                <img src="${imageUrl}" alt="${r.name}" loading="lazy" onerror="handleImgError(this)">
                 <span class="card-image-badge ${statusClass}">${statusLabel}</span>
             </div>` : `
             <div class="card-status-banner ${statusClass}">${statusLabel}</div>`}
